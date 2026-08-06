@@ -4,7 +4,6 @@ const cloudinary = require("../config/cloudinary");
 const path = require("path");
 
 
-// Cloudinary Storage Configuration
 
 const storage = new CloudinaryStorage({
 
@@ -12,7 +11,7 @@ const storage = new CloudinaryStorage({
 
     params: {
 
-        folder: "library/books",
+        folder: "library/users",
 
         allowed_formats: [
             "jpg",
@@ -26,8 +25,6 @@ const storage = new CloudinaryStorage({
 });
 
 
-
-// File filter
 
 const fileFilter = (req, file, cb) => {
 
@@ -51,21 +48,18 @@ const fileFilter = (req, file, cb) => {
 
 
 
-    if (isValidExt && isValidMime) {
+    if(isValidExt && isValidMime){
 
+        cb(null,true);
 
-        cb(null, true);
-
-
-    } else {
-
+    }
+    else{
 
         cb(
             new Error(
                 "Only JPG, JPEG, PNG and WEBP images are allowed"
             )
         );
-
 
     }
 
@@ -74,13 +68,11 @@ const fileFilter = (req, file, cb) => {
 
 
 
-// Multer Upload
+const uploadProfile = multer({
 
-const upload = multer({
+    storage,
 
-    storage: storage,
-
-    fileFilter: fileFilter,
+    fileFilter,
 
     limits: {
 
@@ -91,4 +83,4 @@ const upload = multer({
 });
 
 
-module.exports = upload;
+module.exports = uploadProfile;

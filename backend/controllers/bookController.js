@@ -22,8 +22,8 @@ const addBook = async (req, res) => {
         const qrCode = "BOOK-" + crypto.randomBytes(4).toString("hex");
 
 
-        const bookCover = req.file
-            ? `/uploads/books/${req.file.filename}`
+       const bookCover = req.file
+            ? req.file.path
             : "";
 
 
@@ -278,7 +278,7 @@ const updateBook = async (req, res) => {
         if (req.file) {
 
             updateData.bookCover =
-                `/uploads/books/${req.file.filename}`;
+                req.file.path;
 
         }
 
