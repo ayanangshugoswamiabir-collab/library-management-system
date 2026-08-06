@@ -27,15 +27,44 @@ const userSchema = new mongoose.Schema(
             default: "Student"
         },
 
+
+        // Email verification status
         isVerified: {
             type: Boolean,
             default: false
         },
 
+
+        // Token sent through email
+        verificationToken: {
+            type: String
+        },
+
+
+        // Token expiry time
+        verificationTokenExpire: {
+            type: Date
+        },
+
+        resetPasswordToken: {
+
+            type: String
+
+        },
+
+
+        resetPasswordExpire: {
+
+            type: Date
+
+        },
+
+
         profileImage: {
             type: String,
             default: ""
         }
+
     },
     {
         timestamps: true
