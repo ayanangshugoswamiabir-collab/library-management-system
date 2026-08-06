@@ -1,9 +1,7 @@
 const mongoose = require("mongoose");
 
-
 const bookSchema = new mongoose.Schema(
     {
-
         title: {
             type: String,
             required: true,
@@ -19,34 +17,41 @@ const bookSchema = new mongoose.Schema(
         isbn: {
             type: String,
             required: true,
-            unique: true
+            unique: true,
+            trim: true
         },
 
         category: {
             type: String,
-            required: true
+            required: true,
+            trim: true
         },
 
         publisher: {
-            type: String
+            type: String,
+            trim: true
         },
 
         description: {
-            type: String
+            type: String,
+            trim: true
         },
 
         totalCopies: {
             type: Number,
             required: true,
-            default: 1
+            default: 1,
+            min: 1
         },
 
         availableCopies: {
             type: Number,
             required: true,
-            default: 1
+            default: 1,
+            min: 0
         },
 
+        // Book cover image path
         bookCover: {
             type: String,
             default: ""
@@ -58,9 +63,12 @@ const bookSchema = new mongoose.Schema(
             required: true
         },
 
+        // Will be used in Phase 6
         qrCode: {
             type: String,
-            unique: true
+            unique: true,
+            sparse: true,
+            default: ""
         }
     },
     {
@@ -68,8 +76,6 @@ const bookSchema = new mongoose.Schema(
     }
 );
 
-
 const Book = mongoose.model("Book", bookSchema);
-
 
 module.exports = Book;

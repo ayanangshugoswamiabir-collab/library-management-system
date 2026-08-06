@@ -15,11 +15,16 @@ const addBook = async (req, res) => {
             publisher,
             description,
             totalCopies,
-            availableCopies,
-            bookCover
+            availableCopies
         } = req.body;
 
+
         const qrCode = "BOOK-" + crypto.randomBytes(4).toString("hex");
+
+
+        const bookCover = req.file
+            ? `/uploads/books/${req.file.filename}`
+            : "";
 
 
         const book = await Book.create({
@@ -35,6 +40,7 @@ const addBook = async (req, res) => {
             bookCover,
             createdBy: req.user.id,
             qrCode
+
         });
 
 
@@ -58,105 +64,141 @@ const addBook = async (req, res) => {
 
 };
 
-// Get all books with search
+
+
+
+// Get all books with search, filter, sort and pagination
 const getBooks = async (req, res) => {
 
     try {
 
-        const { search, category, sort, page, limit } = req.query;
+        const {
+            search,
+            category,
+            sort,
+            page,
+            limit
+        } = req.query;
 
 
         let query = {};
 
 
-if (search) {
 
-    query.$or = [
+        // Search by title, author, ISBN
+        if (search) {
 
-        {
-            title: {
-                $regex: search,
-                $options: "i"
-            }
-        },
+            query.$or = [
 
-        {
-            author: {
-                $regex: search,
-                $options: "i"
-            }
-        },
+                {
+                    title: {
+                        $regex: search,
+                        $options: "i"
+                    }
+                },
 
-        {
-            isbn: {
-                $regex: search,
-                $options: "i"
-            }
+                {
+                    author: {
+                        $regex: search,
+                        $options: "i"
+                    }
+                },
+
+                {
+                    isbn: {
+                        $regex: search,
+                        $options: "i"
+                    }
+                }
+
+            ];
+
         }
 
-    ];
-
-}
 
 
-if (category) {
+        // Filter by category
+        if (category) {
 
-    query.category = category;
+            query.category = category;
 
-}
-
-
-     let booksQuery = Book.find(query);
+        }
 
 
-// Sorting
-if (sort) {
 
-    const sortOrder = sort.startsWith("-") ? -1 : 1;
-
-    const sortField = sort.replace("-", "");
+        let booksQuery = Book.find(query);
 
 
-    booksQuery = booksQuery.sort({
 
-        [sortField]: sortOrder
+        // Sorting
 
-    });
+        if (sort) {
 
-}
-
-
-// Pagination
-const pageNumber = Number(page) || 1;
-
-const limitNumber = Number(limit) || 10;
+            const sortOrder =
+                sort.startsWith("-") ? -1 : 1;
 
 
-const skip = (pageNumber - 1) * limitNumber;
+            const sortField =
+                sort.replace("-", "");
 
 
-booksQuery = booksQuery
-    .skip(skip)
-    .limit(limitNumber);
+            booksQuery =
+                booksQuery.sort({
+
+                    [sortField]: sortOrder
+
+                });
+
+        }
 
 
-const books = await booksQuery;
+
+        // Pagination
+
+        const pageNumber =
+            Number(page) || 1;
 
 
-const totalBooks = await Book.countDocuments(query);
+        const limitNumber =
+            Number(limit) || 10;
 
 
-res.status(200).json({
+        const skip =
+            (pageNumber - 1) * limitNumber;
 
-    page: pageNumber,
 
-    totalBooks,
 
-    totalPages: Math.ceil(totalBooks / limitNumber),
+        booksQuery =
+            booksQuery
+            .skip(skip)
+            .limit(limitNumber);
 
-    books
 
-});
+
+        const books =
+            await booksQuery;
+
+
+
+        const totalBooks =
+            await Book.countDocuments(query);
+
+
+
+        res.status(200).json({
+
+            page: pageNumber,
+
+            totalBooks,
+
+            totalPages:
+                Math.ceil(
+                    totalBooks / limitNumber
+                ),
+
+            books
+
+        });
 
 
 
@@ -171,13 +213,19 @@ res.status(200).json({
     }
 
 };
+
+
+
 
 // Get single book by ID
 const getBookById = async (req, res) => {
 
     try {
 
-        const book = await Book.findById(req.params.id);
+
+        const book =
+            await Book.findById(req.params.id);
+
 
 
         if (!book) {
@@ -191,7 +239,9 @@ const getBookById = async (req, res) => {
         }
 
 
+
         res.status(200).json(book);
+
 
 
     } catch (error) {
@@ -205,24 +255,52 @@ const getBookById = async (req, res) => {
     }
 
 };
+
+
+
 
 // Update book
 const updateBook = async (req, res) => {
 
     try {
 
-        const book = await Book.findByIdAndUpdate(
 
-            req.params.id,
+        const updateData = {
 
-            req.body,
 
-            {
-                new: true,
-                runValidators: true
-            }
+            ...req.body
 
-        );
+        };
+
+
+
+        // If new image uploaded
+        if (req.file) {
+
+            updateData.bookCover =
+                `/uploads/books/${req.file.filename}`;
+
+        }
+
+
+
+        const book =
+            await Book.findByIdAndUpdate(
+
+                req.params.id,
+
+                updateData,
+
+                {
+
+                    new: true,
+
+                    runValidators: true
+
+                }
+
+            );
+
 
 
         if (!book) {
@@ -236,12 +314,15 @@ const updateBook = async (req, res) => {
         }
 
 
+
         res.status(200).json({
 
             message: "Book updated successfully",
+
             book
 
         });
+
 
 
     } catch (error) {
@@ -256,12 +337,18 @@ const updateBook = async (req, res) => {
 
 };
 
+
+
+
 // Delete book
 const deleteBook = async (req, res) => {
 
     try {
 
-        const book = await Book.findByIdAndDelete(req.params.id);
+
+        const book =
+            await Book.findByIdAndDelete(req.params.id);
+
 
 
         if (!book) {
@@ -273,6 +360,7 @@ const deleteBook = async (req, res) => {
             });
 
         }
+
 
 
         res.status(200).json({
@@ -282,6 +370,7 @@ const deleteBook = async (req, res) => {
         });
 
 
+
     } catch (error) {
 
         res.status(500).json({
@@ -295,10 +384,17 @@ const deleteBook = async (req, res) => {
 };
 
 
+
 module.exports = {
+
     addBook,
+
     getBooks,
+
     getBookById,
+
     updateBook,
+
     deleteBook
+
 };

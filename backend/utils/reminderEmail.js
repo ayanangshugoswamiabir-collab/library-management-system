@@ -3,11 +3,14 @@ const Borrow = require("../models/Borrow");
 const sendEmail = require("./sendEmail");
 
 
-// Run every day at 9 AM
+// Due date reminder job
 const startReminderJob = () => {
 
 
-    cron.schedule("0.9 * * * *", async () => {
+    // TESTING: Runs every minute
+    // After testing change to: "0 9 * * *" (Every day at 9 AM)
+
+    cron.schedule("* * * * *", async () => {
 
 
         try {
@@ -39,7 +42,6 @@ const startReminderJob = () => {
 
                 }
 
-
             })
             .populate("user")
             .populate("book");
@@ -60,7 +62,6 @@ const startReminderJob = () => {
 
                     <h2>Library Reminder</h2>
 
-
                     <p>Hello ${borrow.user.name},</p>
 
 
@@ -76,10 +77,10 @@ const startReminderJob = () => {
                     Please return it before the due date.
                     </p>
 
-
                     `
 
                 });
+
 
 
                 console.log(
