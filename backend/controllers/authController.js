@@ -359,116 +359,101 @@ const resetPassword = async(req,res,next)=>{
 
 // Login User
 
-const loginUser = async(req,res,next)=>{
+const loginUser = async (req, res, next) => {
+    try {
+        console.log("=================================");
+        console.log("LOGIN REQUEST RECEIVED");
+        console.log("Email:", req.body.email);
+        console.log("Password received:", !!req.body.password);
 
+        const { email, password } = req.body;
 
-    try{
+        // 1. Find user
+        const user = await User.findOne({ email });
 
+        console.log("User found:", !!user);
 
-        const {email,password}=req.body;
-
-
-
-        const user =
-            await User.findOne({email});
-
-
-
-        if(!user){
-
-            return res.status(400).json({
-
-                message:
-                "Invalid email or password"
-
-            });
-
-        }
-
-
-
-        const isMatch =
-            await bcrypt.compare(
-                password,
-                user.password
-            );
-
-
-
-        if(!isMatch){
+        if (!user) {
+            console.log("LOGIN FAILED: USER NOT FOUND");
 
             return res.status(400).json({
-
-                message:
-                "Invalid email or password"
-
+                message: "Invalid email or password",
             });
-
         }
 
+        console.log("User ID:", user._id);
+        console.log("User email:", user.email);
+        console.log("User role:", user.role);
+        console.log("User verified:", user.isVerified);
 
+        // 2. Compare password
+        const isMatch = await bcrypt.compare(
+            password,
+            user.password
+        );
 
-        if(!user.isVerified){
+        console.log("Password matches:", isMatch);
+
+        if (!isMatch) {
+            console.log("LOGIN FAILED: PASSWORD DOES NOT MATCH");
+
+            return res.status(400).json({
+                message: "Invalid email or password",
+            });
+        }
+
+        // 3. Check email verification
+        if (!user.isVerified) {
+            console.log("LOGIN FAILED: EMAIL NOT VERIFIED");
 
             return res.status(401).json({
-
-                message:
-                "Please verify your email first"
-
+                message: "Please verify your email first",
             });
-
         }
 
+        // 4. Check JWT configuration
+        console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
+        console.log("JWT_EXPIRE:", process.env.JWT_EXPIRE);
 
+        if (!process.env.JWT_SECRET) {
+            throw new Error("JWT_SECRET is missing from .env");
+        }
 
-        const token =
-            jwt.sign(
+        // 5. Create JWT
+        const token = jwt.sign(
+            {
+                id: user._id,
+                role: user.role,
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: process.env.JWT_EXPIRE || "7d",
+            }
+        );
 
-                {
-                    id:user._id,
-                    role:user.role
-                },
+        console.log("JWT CREATED SUCCESSFULLY");
 
-                process.env.JWT_SECRET,
-
-                {
-                    expiresIn:
-                    process.env.JWT_EXPIRE
-                }
-
-            );
-
-
-
+        // 6. Send response
         res.status(200).json({
-
-            message:
-            "Login successful",
+            message: "Login successful",
 
             token,
 
-            user:{
-
-                id:user._id,
-
-                name:user.name,
-
-                email:user.email,
-
-                role:user.role
-
-            }
-
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+            },
         });
 
+        console.log("LOGIN SUCCESSFUL");
+        console.log("=================================");
 
-
-    }catch(error){
-
+    } catch (error) {
+        console.error("LOGIN ERROR:", error);
         next(error);
-
     }
-
 };
 
 

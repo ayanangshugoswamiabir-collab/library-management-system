@@ -238,10 +238,6 @@ function MyBorrowedBooks() {
     (borrow) => borrow.status !== "Returned"
   ).length;
 
-  const returnedBooks = borrowHistory.filter(
-    (borrow) => borrow.status === "Returned"
-  ).length;
-
   const overdueBooks = borrowHistory.filter(
     (borrow) =>
       borrow.status !== "Returned" &&

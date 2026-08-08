@@ -12,7 +12,6 @@ import {
   Library,
   Sparkles,
   Users,
-  Layers3,
   GraduationCap,
   Database,
   Zap,
