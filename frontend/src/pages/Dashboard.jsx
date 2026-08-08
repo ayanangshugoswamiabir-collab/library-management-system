@@ -15,11 +15,11 @@ import {
   BookMarked,
 } from "lucide-react";
 
-import RecentActivity from "../components/dashboard/RecentActivity";
-import PopularBooks from "../components/dashboard/PopularBooks";
+import RecentActivity from "../components/Dashboard/RecentActivity";
+import PopularBooks from "../components/Dashboard/PopularBooks";
 
-import MonthlyBorrowChart from "../components/dashboard/charts/MonthlyBorrowChart";
-import CategoryDistributionChart from "../components/dashboard/charts/CategoryDistributionChart";
+import MonthlyBorrowChart from "../components/Dashboard/charts/MonthlyBorrowChart";
+import CategoryDistributionChart from "../components/Dashboard/charts/CategoryDistributionChart";
 
 import {
   getAdminDashboard,
