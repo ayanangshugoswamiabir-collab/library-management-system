@@ -4,7 +4,7 @@ const User = require("../models/User");
 
 // Get all users (Admin)
 
-const getAllUsers = async (req, res) => {
+const getAllUsers = async (req, res, next) => {
 
     try {
 
@@ -23,13 +23,7 @@ const getAllUsers = async (req, res) => {
 
     } catch (error) {
 
-
-        res.status(500).json({
-
-            message: error.message
-
-        });
-
+        next(error);
 
     }
 
@@ -41,7 +35,7 @@ const getAllUsers = async (req, res) => {
 
 // Get single user by ID (Admin)
 
-const getUserById = async (req, res) => {
+const getUserById = async (req, res, next) => {
 
 
     try {
@@ -54,13 +48,11 @@ const getUserById = async (req, res) => {
 
         if (!user) {
 
-
             return res.status(404).json({
 
                 message: "User not found"
 
             });
-
 
         }
 
@@ -78,13 +70,7 @@ const getUserById = async (req, res) => {
 
     } catch (error) {
 
-
-        res.status(500).json({
-
-            message: error.message
-
-        });
-
+        next(error);
 
     }
 
@@ -99,7 +85,7 @@ const getUserById = async (req, res) => {
 
 // Update user (Admin)
 
-const updateUser = async (req, res) => {
+const updateUser = async (req, res, next) => {
 
 
     try {
@@ -165,13 +151,7 @@ const updateUser = async (req, res) => {
 
     } catch (error) {
 
-
-        res.status(500).json({
-
-            message: error.message
-
-        });
-
+        next(error);
 
     }
 
@@ -185,9 +165,10 @@ const updateUser = async (req, res) => {
 
 
 
+
 // Delete user (Admin)
 
-const deleteUser = async (req, res) => {
+const deleteUser = async (req, res, next) => {
 
 
     try {
@@ -223,13 +204,7 @@ const deleteUser = async (req, res) => {
 
     } catch (error) {
 
-
-        res.status(500).json({
-
-            message: error.message
-
-        });
-
+        next(error);
 
     }
 
@@ -246,7 +221,7 @@ const deleteUser = async (req, res) => {
 
 // Upload Profile Image
 
-const uploadProfileImage = async (req, res) => {
+const uploadProfileImage = async (req, res, next) => {
 
 
     try {
@@ -301,18 +276,13 @@ const uploadProfileImage = async (req, res) => {
 
     } catch (error) {
 
-
-        res.status(500).json({
-
-            message: error.message
-
-        });
-
+        next(error);
 
     }
 
 
 };
+
 
 
 

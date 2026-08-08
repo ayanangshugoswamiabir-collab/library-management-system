@@ -7,7 +7,8 @@ const sendEmail = require("../utils/sendEmail");
 
 
 // Register User
-const registerUser = async (req, res) => {
+
+const registerUser = async (req, res, next) => {
 
     try {
 
@@ -28,14 +29,13 @@ const registerUser = async (req, res) => {
         }
 
 
+        const hashedPassword =
+            await bcrypt.hash(password, 10);
 
-        const hashedPassword = await bcrypt.hash(password, 10);
 
 
-
-        const verificationToken = crypto
-            .randomBytes(32)
-            .toString("hex");
+        const verificationToken =
+            crypto.randomBytes(32).toString("hex");
 
 
 
@@ -49,14 +49,15 @@ const registerUser = async (req, res) => {
 
             verificationToken,
 
-            verificationTokenExpire: Date.now() + 60 * 60 * 1000
+            verificationTokenExpire:
+                Date.now() + 60 * 60 * 1000
 
         });
 
 
 
         const verificationURL =
-        `http://localhost:5000/api/auth/verify/${verificationToken}`;
+            `http://localhost:5000/api/auth/verify/${verificationToken}`;
 
 
 
@@ -64,7 +65,8 @@ const registerUser = async (req, res) => {
 
             email: user.email,
 
-            subject: "Verify your Library Management Account",
+            subject:
+                "Verify your Library Management Account",
 
             message: `
 
@@ -72,13 +74,11 @@ const registerUser = async (req, res) => {
 
                 <p>Thank you for registering with Library Management System.</p>
 
-                <p>Please verify your email by clicking the link below:</p>
+                <p>Please verify your email:</p>
 
                 <a href="${verificationURL}">
                     Verify Email
                 </a>
-
-                <p>This verification link will expire in 1 hour.</p>
 
             `
 
@@ -88,17 +88,18 @@ const registerUser = async (req, res) => {
 
         res.status(201).json({
 
-            message: "User registered successfully. Please verify your email.",
+            message:
+            "User registered successfully. Please verify your email.",
 
             user: {
 
-                id: user._id,
+                id:user._id,
 
-                name: user.name,
+                name:user.name,
 
-                email: user.email,
+                email:user.email,
 
-                role: user.role
+                role:user.role
 
             }
 
@@ -106,15 +107,9 @@ const registerUser = async (req, res) => {
 
 
 
-    } catch (error) {
+    } catch(error) {
 
-
-        res.status(500).json({
-
-            message: error.message
-
-        });
-
+        next(error);
 
     }
 
@@ -123,32 +118,36 @@ const registerUser = async (req, res) => {
 
 
 
+
 // Verify Email
-const verifyEmail = async (req, res) => {
+
+const verifyEmail = async (req,res,next)=>{
 
     try {
 
-        const { token } = req.params;
+
+        const {token}=req.params;
 
 
 
         const user = await User.findOne({
 
-            verificationToken: token,
+            verificationToken:token,
 
-            verificationTokenExpire: {
-                $gt: Date.now()
+            verificationTokenExpire:{
+                $gt:Date.now()
             }
 
         });
 
 
 
-        if (!user) {
+        if(!user){
 
             return res.status(400).json({
 
-                message: "Invalid or expired verification token"
+                message:
+                "Invalid or expired verification token"
 
             });
 
@@ -156,11 +155,11 @@ const verifyEmail = async (req, res) => {
 
 
 
-        user.isVerified = true;
+        user.isVerified=true;
 
-        user.verificationToken = undefined;
+        user.verificationToken=undefined;
 
-        user.verificationTokenExpire = undefined;
+        user.verificationTokenExpire=undefined;
 
 
 
@@ -170,21 +169,16 @@ const verifyEmail = async (req, res) => {
 
         res.status(200).json({
 
-            message: "Email verified successfully"
+            message:
+            "Email verified successfully"
 
         });
 
 
 
-    } catch (error) {
+    }catch(error){
 
-
-        res.status(500).json({
-
-            message: error.message
-
-        });
-
+        next(error);
 
     }
 
@@ -193,24 +187,29 @@ const verifyEmail = async (req, res) => {
 
 
 
+
 // Forgot Password
-const forgotPassword = async (req, res) => {
 
-    try {
-
-        const { email } = req.body;
+const forgotPassword = async(req,res,next)=>{
 
 
-
-        const user = await User.findOne({ email });
-
+    try{
 
 
-        if (!user) {
+        const {email}=req.body;
+
+
+
+        const user =
+            await User.findOne({email});
+
+
+
+        if(!user){
 
             return res.status(404).json({
 
-                message: "User not found"
+                message:"User not found"
 
             });
 
@@ -218,17 +217,16 @@ const forgotPassword = async (req, res) => {
 
 
 
-        const resetToken = crypto
-            .randomBytes(32)
-            .toString("hex");
+        const resetToken =
+            crypto.randomBytes(32).toString("hex");
 
 
 
-        user.resetPasswordToken = resetToken;
+        user.resetPasswordToken=resetToken;
 
 
         user.resetPasswordExpire =
-            Date.now() + 15 * 60 * 1000;
+            Date.now()+15*60*1000;
 
 
 
@@ -243,27 +241,19 @@ const forgotPassword = async (req, res) => {
 
         await sendEmail({
 
-            email: user.email,
+            email:user.email,
 
-            subject: "Password Reset Request",
+            subject:"Password Reset Request",
 
-            message: `
+            message:`
 
-                <h2>Password Reset</h2>
+            <h2>Password Reset</h2>
 
-                <p>Hello ${user.name}</p>
+            <p>Hello ${user.name}</p>
 
-                <p>You requested a password reset.</p>
-
-                <p>Click the link below:</p>
-
-
-                <a href="${resetURL}">
-                    Reset Password
-                </a>
-
-
-                <p>This link expires in 15 minutes.</p>
+            <a href="${resetURL}">
+            Reset Password
+            </a>
 
             `
 
@@ -273,54 +263,57 @@ const forgotPassword = async (req, res) => {
 
         res.status(200).json({
 
-            message: "Password reset email sent"
+            message:
+            "Password reset email sent"
 
         });
 
 
 
-    } catch(error) {
+    }catch(error){
 
-
-        res.status(500).json({
-
-            message: error.message
-
-        });
-
+        next(error);
 
     }
 
 };
 
+
+
+
+
 // Reset Password
-const resetPassword = async (req, res) => {
 
-    try {
+const resetPassword = async(req,res,next)=>{
 
-        const { token } = req.params;
 
-        const { password } = req.body;
+    try{
+
+
+        const {token}=req.params;
+
+        const {password}=req.body;
 
 
 
         const user = await User.findOne({
 
-            resetPasswordToken: token,
+            resetPasswordToken:token,
 
-            resetPasswordExpire: {
-                $gt: Date.now()
+            resetPasswordExpire:{
+                $gt:Date.now()
             }
 
         });
 
 
 
-        if (!user) {
+        if(!user){
 
             return res.status(400).json({
 
-                message: "Invalid or expired reset token"
+                message:
+                "Invalid or expired reset token"
 
             });
 
@@ -328,17 +321,14 @@ const resetPassword = async (req, res) => {
 
 
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        user.password =
+            await bcrypt.hash(password,10);
 
 
 
-        user.password = hashedPassword;
+        user.resetPasswordToken=undefined;
 
-
-        user.resetPasswordToken = undefined;
-
-
-        user.resetPasswordExpire = undefined;
+        user.resetPasswordExpire=undefined;
 
 
 
@@ -348,45 +338,48 @@ const resetPassword = async (req, res) => {
 
         res.status(200).json({
 
-            message: "Password reset successful"
+            message:
+            "Password reset successful"
 
         });
 
 
 
-    } catch(error) {
+    }catch(error){
 
-
-        res.status(500).json({
-
-            message: error.message
-
-        });
-
+        next(error);
 
     }
 
 };
 
 
+
+
+
 // Login User
-const loginUser = async (req, res) => {
 
-    try {
-
-        const { email, password } = req.body;
+const loginUser = async(req,res,next)=>{
 
 
-
-        const user = await User.findOne({ email });
-
+    try{
 
 
-        if (!user) {
+        const {email,password}=req.body;
+
+
+
+        const user =
+            await User.findOne({email});
+
+
+
+        if(!user){
 
             return res.status(400).json({
 
-                message: "Invalid email or password"
+                message:
+                "Invalid email or password"
 
             });
 
@@ -394,15 +387,20 @@ const loginUser = async (req, res) => {
 
 
 
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch =
+            await bcrypt.compare(
+                password,
+                user.password
+            );
 
 
 
-        if (!isMatch) {
+        if(!isMatch){
 
             return res.status(400).json({
 
-                message: "Invalid email or password"
+                message:
+                "Invalid email or password"
 
             });
 
@@ -410,11 +408,12 @@ const loginUser = async (req, res) => {
 
 
 
-        if (!user.isVerified) {
+        if(!user.isVerified){
 
             return res.status(401).json({
 
-                message: "Please verify your email first"
+                message:
+                "Please verify your email first"
 
             });
 
@@ -422,44 +421,41 @@ const loginUser = async (req, res) => {
 
 
 
-        const token = jwt.sign(
+        const token =
+            jwt.sign(
 
-            {
+                {
+                    id:user._id,
+                    role:user.role
+                },
 
-                id: user._id,
+                process.env.JWT_SECRET,
 
-                role: user.role
+                {
+                    expiresIn:
+                    process.env.JWT_EXPIRE
+                }
 
-            },
-
-            process.env.JWT_SECRET,
-
-            {
-
-                expiresIn: process.env.JWT_EXPIRE
-
-            }
-
-        );
+            );
 
 
 
         res.status(200).json({
 
-            message: "Login successful",
+            message:
+            "Login successful",
 
             token,
 
+            user:{
 
-            user: {
+                id:user._id,
 
-                id: user._id,
+                name:user.name,
 
-                name: user.name,
+                email:user.email,
 
-                email: user.email,
-
-                role: user.role
+                role:user.role
 
             }
 
@@ -467,15 +463,9 @@ const loginUser = async (req, res) => {
 
 
 
-    } catch (error) {
+    }catch(error){
 
-
-        res.status(500).json({
-
-            message: error.message
-
-        });
-
+        next(error);
 
     }
 

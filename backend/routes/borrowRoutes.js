@@ -1,17 +1,84 @@
+
 const express = require("express");
 
 const router = express.Router();
 
-const { 
-    issueBook, 
+const {
+    issueBook,
     returnBook,
-    getBorrowHistory
+    studentReturnBook,
+    getBorrowHistory,
+    getAllBorrows,
+    studentBorrowBook
 } = require("../controllers/borrowController");
 
-router.post("/issue", issueBook);
+// Middleware
+const protect = require("../middleware/authMiddleware");
+const authorizeRoles = require("../middleware/roleMiddleware");
 
-router.post("/return", returnBook);
 
-router.get("/history/:id", getBorrowHistory);
+// =====================================
+// Issue Book
+// Admin / Librarian
+// =====================================
+
+router.post(
+    "/issue",
+    protect,
+    authorizeRoles("Admin", "Librarian"),
+    issueBook
+);
+
+router.post(
+    "/student",
+    protect,
+    authorizeRoles("Student"),
+    studentBorrowBook
+);
+
+router.post(
+    "/student/return",
+    protect,
+    authorizeRoles("Student"),
+    studentReturnBook
+);
+
+// =====================================
+// Return Book
+// Admin / Librarian
+// =====================================
+
+router.post(
+    "/return",
+    protect,
+    authorizeRoles("Admin", "Librarian"),
+    returnBook
+);
+
+
+// =====================================
+// Get All Borrow Records
+// Admin / Librarian
+// =====================================
+
+router.get(
+    "/",
+    protect,
+    authorizeRoles("Admin", "Librarian"),
+    getAllBorrows
+);
+
+
+// =====================================
+// Get Borrow History of User
+// =====================================
+
+router.get(
+    "/history/:id",
+    protect,
+    getBorrowHistory
+);
+
 
 module.exports = router;
+

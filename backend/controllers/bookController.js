@@ -3,7 +3,7 @@ const crypto = require("crypto");
 
 
 // Add new book
-const addBook = async (req, res) => {
+const addBook = async (req, res, next) => {
 
     try {
 
@@ -19,10 +19,11 @@ const addBook = async (req, res) => {
         } = req.body;
 
 
-        const qrCode = "BOOK-" + crypto.randomBytes(4).toString("hex");
+        const qrCode =
+            "BOOK-" + crypto.randomBytes(4).toString("hex");
 
 
-       const bookCover = req.file
+        const bookCover = req.file
             ? req.file.path
             : "";
 
@@ -54,11 +55,7 @@ const addBook = async (req, res) => {
 
     } catch (error) {
 
-        res.status(500).json({
-
-            message: error.message
-
-        });
+        next(error);
 
     }
 
@@ -68,7 +65,7 @@ const addBook = async (req, res) => {
 
 
 // Get all books with search, filter, sort and pagination
-const getBooks = async (req, res) => {
+const getBooks = async (req, res, next) => {
 
     try {
 
@@ -85,7 +82,6 @@ const getBooks = async (req, res) => {
 
 
 
-        // Search by title, author, ISBN
         if (search) {
 
             query.$or = [
@@ -117,7 +113,6 @@ const getBooks = async (req, res) => {
 
 
 
-        // Filter by category
         if (category) {
 
             query.category = category;
@@ -129,8 +124,6 @@ const getBooks = async (req, res) => {
         let booksQuery = Book.find(query);
 
 
-
-        // Sorting
 
         if (sort) {
 
@@ -152,8 +145,6 @@ const getBooks = async (req, res) => {
         }
 
 
-
-        // Pagination
 
         const pageNumber =
             Number(page) || 1;
@@ -204,11 +195,7 @@ const getBooks = async (req, res) => {
 
     } catch (error) {
 
-        res.status(500).json({
-
-            message: error.message
-
-        });
+        next(error);
 
     }
 
@@ -218,7 +205,7 @@ const getBooks = async (req, res) => {
 
 
 // Get single book by ID
-const getBookById = async (req, res) => {
+const getBookById = async (req, res, next) => {
 
     try {
 
@@ -246,11 +233,7 @@ const getBookById = async (req, res) => {
 
     } catch (error) {
 
-        res.status(500).json({
-
-            message: error.message
-
-        });
+        next(error);
 
     }
 
@@ -260,13 +243,12 @@ const getBookById = async (req, res) => {
 
 
 // Update book
-const updateBook = async (req, res) => {
+const updateBook = async (req, res, next) => {
 
     try {
 
 
         const updateData = {
-
 
             ...req.body
 
@@ -274,7 +256,6 @@ const updateBook = async (req, res) => {
 
 
 
-        // If new image uploaded
         if (req.file) {
 
             updateData.bookCover =
@@ -327,11 +308,7 @@ const updateBook = async (req, res) => {
 
     } catch (error) {
 
-        res.status(500).json({
-
-            message: error.message
-
-        });
+        next(error);
 
     }
 
@@ -341,7 +318,7 @@ const updateBook = async (req, res) => {
 
 
 // Delete book
-const deleteBook = async (req, res) => {
+const deleteBook = async (req, res, next) => {
 
     try {
 
@@ -373,11 +350,7 @@ const deleteBook = async (req, res) => {
 
     } catch (error) {
 
-        res.status(500).json({
-
-            message: error.message
-
-        });
+        next(error);
 
     }
 
