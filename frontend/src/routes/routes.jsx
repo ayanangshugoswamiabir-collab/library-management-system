@@ -1,5 +1,5 @@
 
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import MainLayout from "../layouts/MainLayout";
 
@@ -20,9 +20,18 @@ import Users from "../pages/Users";
 import Settings from "../pages/Settings";
 
 import ProtectedRoute from "../components/auth/ProtectedRoute";
-
+import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword";
 
 const router = createBrowserRouter([
+  // =====================================
+  // ROOT
+  // =====================================
+
+  {
+    path: "/",
+    element: <Navigate to="/login" replace />,
+  },
 
   // =====================================
   // PUBLIC ROUTES
@@ -34,10 +43,20 @@ const router = createBrowserRouter([
   },
 
   {
+  path: "/forgot-password",
+  element: <ForgotPassword />,
+    },
+
+
+  {
     path: "/register",
     element: <Register />,
   },
 
+  {
+  path: "/reset-password/:token",
+  element: <ResetPassword />,
+},
 
   // =====================================
   // PROTECTED ROUTES
@@ -45,7 +64,6 @@ const router = createBrowserRouter([
 
   {
     path: "/",
-
     element: (
       <ProtectedRoute>
         <MainLayout />
@@ -53,21 +71,14 @@ const router = createBrowserRouter([
     ),
 
     children: [
-
       // =====================================
       // DASHBOARD
       // =====================================
 
       {
-        index: true,
-        element: <Dashboard />,
-      },
-
-      {
         path: "dashboard",
         element: <Dashboard />,
       },
-
 
       // =====================================
       // BOOK MANAGEMENT
@@ -93,26 +104,19 @@ const router = createBrowserRouter([
         element: <EditBook />,
       },
 
-
       // =====================================
       // BORROWING SYSTEM
       // =====================================
-
-      // Admin / Librarian borrowing dashboard
 
       {
         path: "borrow",
         element: <Borrow />,
       },
 
-
-      // Admin / Librarian manually issue a book
-
       {
         path: "issue-book",
         element: <IssueBook />,
       },
-
 
       // =====================================
       // STUDENT BORROWED BOOKS
@@ -123,7 +127,6 @@ const router = createBrowserRouter([
         element: <MyBorrowedBooks />,
       },
 
-
       // =====================================
       // USER MANAGEMENT
       // =====================================
@@ -133,7 +136,6 @@ const router = createBrowserRouter([
         element: <Users />,
       },
 
-
       // =====================================
       // SETTINGS
       // =====================================
@@ -142,11 +144,9 @@ const router = createBrowserRouter([
         path: "settings",
         element: <Settings />,
       },
-
     ],
   },
-
 ]);
 
-
 export default router;
+

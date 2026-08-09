@@ -234,8 +234,8 @@ const forgotPassword = async(req,res,next)=>{
 
 
 
-        const resetURL =
-        `http://localhost:5000/api/auth/reset-password/${resetToken}`;
+       const resetURL =
+            `http://localhost:5173/reset-password/${resetToken}`;
 
 
 
