@@ -20,18 +20,19 @@ import {
   Upload,
   Save,
   Sparkles,
+  CheckCircle2,
+  X,
 } from "lucide-react";
 
-
 function EditBook() {
-
   const { id } = useParams();
-
   const navigate = useNavigate();
 
+  // =====================================
+  // Form State
+  // =====================================
 
   const [formData, setFormData] = useState({
-
     title: "",
     author: "",
     isbn: "",
@@ -39,120 +40,99 @@ function EditBook() {
     publisher: "",
     description: "",
     totalCopies: 1,
-
   });
 
-
   const [existingImage, setExistingImage] = useState("");
-
   const [image, setImage] = useState(null);
 
   const [loading, setLoading] = useState(true);
-
   const [saving, setSaving] = useState(false);
-
   const [error, setError] = useState("");
 
+  // =====================================
+  // Success Notification
+  // =====================================
 
-
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // =====================================
   // Fetch Existing Book
   // =====================================
 
   useEffect(() => {
-
     const fetchBook = async () => {
-
       try {
+        setLoading(true);
+        setError("");
 
         const data = await getBookById(id);
 
         setFormData({
-
           title: data.title || "",
-
           author: data.author || "",
-
           isbn: data.isbn || "",
-
           category: data.category || "",
-
           publisher: data.publisher || "",
-
           description: data.description || "",
-
           totalCopies: data.totalCopies || 1,
-
         });
 
         setExistingImage(data.bookCover || "");
-
       } catch (error) {
+        console.error(error);
 
-        console.log(error);
-
-        setError("Failed to load book");
-
+        setError(
+          error.response?.data?.message ||
+            "Failed to load book"
+        );
       } finally {
-
         setLoading(false);
-
       }
-
     };
 
     fetchBook();
-
   }, [id]);
-
-
-
 
   // =====================================
   // Handle Input Changes
   // =====================================
 
   const handleChange = (e) => {
-
     setFormData({
-
       ...formData,
-
       [e.target.name]: e.target.value,
-
     });
-
   };
-
-
-
 
   // =====================================
   // Handle Image
   // =====================================
 
   const handleImageChange = (e) => {
+    const selectedImage = e.target.files?.[0];
 
-    setImage(e.target.files[0]);
-
+    if (selectedImage) {
+      setImage(selectedImage);
+    }
   };
 
+  // =====================================
+  // Close Success Notification
+  // =====================================
 
-
+  const closeSuccessNotification = () => {
+    setShowSuccess(false);
+  };
 
   // =====================================
   // Submit
   // =====================================
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
     try {
-
       setSaving(true);
-
       setError("");
 
       const bookFormData = new FormData();
@@ -192,67 +172,54 @@ function EditBook() {
         formData.totalCopies
       );
 
-
       // Add new image only if selected
-
       if (image) {
-
         bookFormData.append(
           "bookCover",
           image
         );
-
       }
-
 
       await updateBook(
         id,
         bookFormData
       );
 
+      // =================================
+      // Show Custom Success Notification
+      // =================================
 
-      alert(
-        "Book updated successfully"
-      );
+      setShowSuccess(true);
 
+      // =================================
+      // Automatically navigate after
+      // notification is displayed
+      // =================================
 
-      navigate(
-        `/books/${id}`
-      );
-
+      setTimeout(() => {
+        navigate(`/books/${id}`);
+      }, 1800);
 
     } catch (error) {
-
-      console.log(error);
+      console.error(error);
 
       setError(
         error.response?.data?.message ||
-        "Failed to update book"
+          "Failed to update book"
       );
-
     } finally {
-
       setSaving(false);
-
     }
-
   };
-
-
-
 
   // =====================================
   // Loading
   // =====================================
 
   if (loading) {
-
     return (
-
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-
         <div className="text-center">
-
           <div
             className="
               mx-auto
@@ -269,28 +236,18 @@ function EditBook() {
           <p className="mt-5 text-slate-400 font-medium">
             Loading book...
           </p>
-
         </div>
-
       </div>
-
     );
-
   }
-
-
-
 
   // =====================================
   // Error
   // =====================================
 
   if (error && !formData.title) {
-
     return (
-
       <div className="min-h-screen bg-slate-950 flex items-center justify-center px-6">
-
         <div
           className="
             max-w-md
@@ -305,7 +262,6 @@ function EditBook() {
             shadow-[0_30px_80px_rgba(0,0,0,0.4)]
           "
         >
-
           <div
             className="
               mx-auto
@@ -319,6 +275,8 @@ function EditBook() {
               items-center
               justify-center
               text-red-400
+              text-xl
+              font-bold
             "
           >
             !
@@ -327,20 +285,12 @@ function EditBook() {
           <p className="mt-5 text-red-300 font-semibold">
             {error}
           </p>
-
         </div>
-
       </div>
-
     );
-
   }
 
-
-
-
   return (
-
     <div
       className="
         relative
@@ -355,13 +305,11 @@ function EditBook() {
         md:p-8
       "
     >
-
       {/* =====================================
           BACKGROUND GLOW
       ===================================== */}
 
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-
         <div
           className="
             absolute
@@ -401,8 +349,6 @@ function EditBook() {
           "
         />
 
-        {/* Grid */}
-
         <div
           className="
             absolute
@@ -412,11 +358,7 @@ function EditBook() {
             bg-[size:55px_55px]
           "
         />
-
       </div>
-
-
-
 
       {/* =====================================
           DECORATIVE 3D OBJECTS
@@ -461,8 +403,107 @@ function EditBook() {
         "
       />
 
+      {/* =====================================
+          SUCCESS NOTIFICATION
+      ===================================== */}
 
+      {showSuccess && (
+        <div
+          className="
+            fixed
+            top-6
+            right-6
+            z-[100]
+            w-[360px]
+            max-w-[calc(100vw-2rem)]
+            overflow-hidden
+            rounded-2xl
+            border
+            border-emerald-400/20
+            bg-slate-900/90
+            shadow-[0_25px_70px_rgba(0,0,0,0.55)]
+            backdrop-blur-2xl
+            animate-[slideIn_0.35s_ease-out]
+          "
+        >
+          <div
+            className="
+              absolute
+              left-0
+              top-0
+              bottom-0
+              w-1
+              bg-gradient-to-b
+              from-emerald-400
+              to-green-500
+            "
+          />
 
+          <div className="p-5">
+            <div className="flex items-start gap-4">
+              <div
+                className="
+                  flex
+                  h-11
+                  w-11
+                  shrink-0
+                  items-center
+                  justify-center
+                  rounded-xl
+                  border
+                  border-emerald-400/20
+                  bg-emerald-500/10
+                "
+              >
+                <CheckCircle2
+                  size={23}
+                  className="text-emerald-400"
+                />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="font-bold text-white">
+                    Book Updated
+                  </h3>
+
+                  <button
+                    type="button"
+                    onClick={closeSuccessNotification}
+                    className="
+                      rounded-lg
+                      p-1
+                      text-slate-500
+                      transition
+                      hover:bg-white/10
+                      hover:text-white
+                    "
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <p className="mt-1 text-sm leading-5 text-slate-400">
+                  The book information has been updated successfully.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 h-1 overflow-hidden rounded-full bg-white/5">
+              <div
+                className="
+                  h-full
+                  w-full
+                  origin-left
+                  rounded-full
+                  bg-emerald-400
+                  animate-[shrink_1.8s_linear]
+                "
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* =====================================
           MAIN CONTENT
@@ -470,16 +511,12 @@ function EditBook() {
 
       <div className="relative z-10 max-w-6xl mx-auto">
 
-
         {/* =====================================
             TOP HEADER
         ===================================== */}
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 mb-8">
-
-
           <div>
-
             <div
               className="
                 inline-flex
@@ -499,13 +536,9 @@ function EditBook() {
                 mb-3
               "
             >
-
               <Sparkles size={13} />
-
               Book Management
-
             </div>
-
 
             <h1
               className="
@@ -518,13 +551,10 @@ function EditBook() {
               Edit Book
             </h1>
 
-
             <p className="mt-2 text-slate-400">
               Update the information and cover of this book.
             </p>
-
           </div>
-
 
           {/* Back Button */}
 
@@ -553,27 +583,20 @@ function EditBook() {
               duration-300
             "
           >
-
             <ArrowLeft
               size={18}
               className="group-hover:-translate-x-1 transition-transform"
             />
 
             Back to Details
-
           </button>
-
         </div>
-
-
-
 
         {/* =====================================
             ERROR MESSAGE
         ===================================== */}
 
         {error && (
-
           <div
             className="
               mb-6
@@ -586,9 +609,7 @@ function EditBook() {
               shadow-[0_15px_35px_rgba(239,68,68,0.08)]
             "
           >
-
             <div className="flex items-center gap-3">
-
               <div
                 className="
                   w-8
@@ -605,22 +626,15 @@ function EditBook() {
               </div>
 
               {error}
-
             </div>
-
           </div>
-
         )}
-
-
-
 
         {/* =====================================
             3D FORM CONTAINER
         ===================================== */}
 
         <div className="relative">
-
 
           {/* Bottom Shadow */}
 
@@ -636,7 +650,6 @@ function EditBook() {
               pointer-events-none
             "
           />
-
 
           {/* Back Layer */}
 
@@ -655,7 +668,6 @@ function EditBook() {
               pointer-events-none
             "
           />
-
 
           {/* Main Card */}
 
@@ -704,10 +716,7 @@ function EditBook() {
               "
             />
 
-
-
             <form onSubmit={handleSubmit}>
-
 
               {/* =====================================
                   FORM HEADER
@@ -725,7 +734,6 @@ function EditBook() {
                   to-purple-500/[0.04]
                 "
               >
-
                 <div className="flex items-center gap-4">
 
                   <div
@@ -746,14 +754,10 @@ function EditBook() {
                       rotate-[-3deg]
                     "
                   >
-
                     <BookOpen size={25} />
-
                   </div>
 
-
                   <div>
-
                     <h2 className="text-xl font-bold">
                       Book Information
                     </h2>
@@ -761,15 +765,10 @@ function EditBook() {
                     <p className="text-sm text-slate-400 mt-1">
                       Make changes to the selected book.
                     </p>
-
                   </div>
 
                 </div>
-
               </div>
-
-
-
 
               {/* =====================================
                   FORM BODY
@@ -777,68 +776,56 @@ function EditBook() {
 
               <div className="p-6 md:p-8">
 
-
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
 
                   {/* Title */}
 
                   <div className="lg:col-span-2">
-
                     <label className="flex items-center gap-2 text-sm font-semibold text-slate-200 mb-2">
-
-                      <BookOpen size={16} className="text-blue-400" />
-
+                      <BookOpen
+                        size={16}
+                        className="text-blue-400"
+                      />
                       Book Title
-
                     </label>
 
-                    <div className="relative">
-
-                      <input
-                        type="text"
-                        name="title"
-                        placeholder="Book Title"
-                        value={formData.title}
-                        onChange={handleChange}
-                        className="
-                          w-full
-                          px-4
-                          py-3.5
-                          rounded-2xl
-                          bg-slate-950/45
-                          border
-                          border-white/10
-                          outline-none
-                          text-white
-                          placeholder:text-slate-600
-                          shadow-[inset_0_2px_10px_rgba(0,0,0,0.15)]
-                          focus:border-blue-500/50
-                          focus:ring-4
-                          focus:ring-blue-500/10
-                          focus:bg-slate-950/60
-                          transition-all
-                        "
-                        required
-                      />
-
-                    </div>
-
+                    <input
+                      type="text"
+                      name="title"
+                      placeholder="Book Title"
+                      value={formData.title}
+                      onChange={handleChange}
+                      className="
+                        w-full
+                        px-4
+                        py-3.5
+                        rounded-2xl
+                        bg-slate-950/45
+                        border
+                        border-white/10
+                        outline-none
+                        text-white
+                        placeholder:text-slate-600
+                        shadow-[inset_0_2px_10px_rgba(0,0,0,0.15)]
+                        focus:border-blue-500/50
+                        focus:ring-4
+                        focus:ring-blue-500/10
+                        focus:bg-slate-950/60
+                        transition-all
+                      "
+                      required
+                    />
                   </div>
-
-
-
 
                   {/* Author */}
 
                   <div>
-
                     <label className="flex items-center gap-2 text-sm font-semibold text-slate-200 mb-2">
-
-                      <UserRound size={16} className="text-purple-400" />
-
+                      <UserRound
+                        size={16}
+                        className="text-purple-400"
+                      />
                       Author
-
                     </label>
 
                     <input
@@ -866,22 +853,17 @@ function EditBook() {
                       "
                       required
                     />
-
                   </div>
-
-
-
 
                   {/* ISBN */}
 
                   <div>
-
                     <label className="flex items-center gap-2 text-sm font-semibold text-slate-200 mb-2">
-
-                      <Hash size={16} className="text-cyan-400" />
-
+                      <Hash
+                        size={16}
+                        className="text-cyan-400"
+                      />
                       ISBN
-
                     </label>
 
                     <input
@@ -909,22 +891,17 @@ function EditBook() {
                       "
                       required
                     />
-
                   </div>
-
-
-
 
                   {/* Category */}
 
                   <div>
-
                     <label className="flex items-center gap-2 text-sm font-semibold text-slate-200 mb-2">
-
-                      <Tags size={16} className="text-pink-400" />
-
+                      <Tags
+                        size={16}
+                        className="text-pink-400"
+                      />
                       Category
-
                     </label>
 
                     <input
@@ -952,22 +929,17 @@ function EditBook() {
                       "
                       required
                     />
-
                   </div>
-
-
-
 
                   {/* Publisher */}
 
                   <div>
-
                     <label className="flex items-center gap-2 text-sm font-semibold text-slate-200 mb-2">
-
-                      <Building2 size={16} className="text-emerald-400" />
-
+                      <Building2
+                        size={16}
+                        className="text-emerald-400"
+                      />
                       Publisher
-
                     </label>
 
                     <input
@@ -994,22 +966,17 @@ function EditBook() {
                         transition-all
                       "
                     />
-
                   </div>
-
-
-
 
                   {/* Total Copies */}
 
                   <div>
-
                     <label className="flex items-center gap-2 text-sm font-semibold text-slate-200 mb-2">
-
-                      <Layers3 size={16} className="text-orange-400" />
-
+                      <Layers3
+                        size={16}
+                        className="text-orange-400"
+                      />
                       Total Copies
-
                     </label>
 
                     <input
@@ -1038,22 +1005,17 @@ function EditBook() {
                       "
                       required
                     />
-
                   </div>
-
-
-
 
                   {/* Description */}
 
                   <div className="lg:col-span-2">
-
                     <label className="flex items-center gap-2 text-sm font-semibold text-slate-200 mb-2">
-
-                      <FileText size={16} className="text-blue-400" />
-
+                      <FileText
+                        size={16}
+                        className="text-blue-400"
+                      />
                       Description
-
                     </label>
 
                     <textarea
@@ -1081,14 +1043,9 @@ function EditBook() {
                         transition-all
                       "
                     />
-
                   </div>
 
-
                 </div>
-
-
-
 
                 {/* =====================================
                     IMAGE SECTION
@@ -1111,16 +1068,13 @@ function EditBook() {
                         justify-center
                       "
                     >
-
                       <ImageIcon
                         size={19}
                         className="text-purple-400"
                       />
-
                     </div>
 
                     <div>
-
                       <h3 className="font-bold text-white">
                         Book Cover
                       </h3>
@@ -1128,21 +1082,15 @@ function EditBook() {
                       <p className="text-xs text-slate-500">
                         Manage the visual cover of this book.
                       </p>
-
                     </div>
 
                   </div>
 
-
-
-
                   <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-7">
-
 
                     {/* Existing Image */}
 
                     {existingImage ? (
-
                       <div>
 
                         <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
@@ -1161,7 +1109,6 @@ function EditBook() {
                             shadow-[0_20px_45px_rgba(0,0,0,0.35)]
                           "
                         >
-
                           <img
                             src={existingImage}
                             alt={formData.title}
@@ -1186,13 +1133,10 @@ function EditBook() {
                               pointer-events-none
                             "
                           />
-
                         </div>
 
                       </div>
-
                     ) : (
-
                       <div>
 
                         <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
@@ -1214,21 +1158,15 @@ function EditBook() {
                             text-slate-600
                           "
                         >
-
                           <BookOpen size={35} />
 
                           <p className="mt-3 text-sm">
                             No cover image
                           </p>
-
                         </div>
 
                       </div>
-
                     )}
-
-
-
 
                     {/* Upload */}
 
@@ -1259,7 +1197,6 @@ function EditBook() {
                           duration-300
                         "
                       >
-
                         <input
                           type="file"
                           accept="image/*"
@@ -1285,9 +1222,7 @@ function EditBook() {
                             duration-300
                           "
                         >
-
                           <Upload size={23} />
-
                         </div>
 
                         <p className="mt-5 font-semibold text-slate-200">
@@ -1298,9 +1233,7 @@ function EditBook() {
                           PNG, JPG or JPEG
                         </p>
 
-
                         {image && (
-
                           <div
                             className="
                               mt-5
@@ -1319,20 +1252,13 @@ function EditBook() {
                           >
                             {image.name}
                           </div>
-
                         )}
-
                       </label>
 
                     </div>
 
-
                   </div>
-
                 </div>
-
-
-
 
                 {/* =====================================
                     ACTIONS
@@ -1351,10 +1277,11 @@ function EditBook() {
                     gap-3
                   "
                 >
-
                   <button
                     type="button"
-                    onClick={() => navigate(`/books/${id}`)}
+                    onClick={() =>
+                      navigate(`/books/${id}`)
+                    }
                     className="
                       px-6
                       py-3.5
@@ -1371,7 +1298,6 @@ function EditBook() {
                   >
                     Cancel
                   </button>
-
 
                   <button
                     type="submit"
@@ -1406,7 +1332,6 @@ function EditBook() {
                       disabled:hover:translate-y-0
                     "
                   >
-
                     {/* Shine */}
 
                     <span
@@ -1423,56 +1348,69 @@ function EditBook() {
                       "
                     />
 
-
                     <Save
                       size={18}
                       className="relative"
                     />
 
                     <span className="relative">
-
                       {saving
                         ? "Updating Book..."
-                        : "Update Book"
-                      }
-
+                        : "Update Book"}
                     </span>
-
                   </button>
-
                 </div>
-
 
               </div>
 
             </form>
 
           </div>
-
         </div>
-
 
         {/* =====================================
             FOOTER NOTE
         ===================================== */}
 
         <div className="flex items-center justify-center gap-2 mt-7 text-xs text-slate-600">
-
           <Sparkles size={13} />
 
           Keep your library collection up to date.
-
         </div>
-
 
       </div>
 
+      {/* =====================================
+          ANIMATION STYLES
+      ===================================== */}
+
+      <style>
+        {`
+          @keyframes slideIn {
+            from {
+              opacity: 0;
+              transform: translateX(30px) scale(0.96);
+            }
+
+            to {
+              opacity: 1;
+              transform: translateX(0) scale(1);
+            }
+          }
+
+          @keyframes shrink {
+            from {
+              transform: scaleX(1);
+            }
+
+            to {
+              transform: scaleX(0);
+            }
+          }
+        `}
+      </style>
     </div>
-
   );
-
 }
 
-
 export default EditBook;
-
